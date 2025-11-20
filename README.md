@@ -36,8 +36,8 @@ Create `.env.local` with:
 
 ```bash
 OPENAI_API_KEY=your-key-here
-# optional override (defaults to gpt-4o-mini)
-OPENAI_MODEL=gpt-4o-mini
+# optional override (defaults to gpt-5-nano)
+OPENAI_MODEL=gpt-5-nano
 ```
 
 ### Commands
