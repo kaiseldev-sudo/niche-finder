@@ -1,10 +1,10 @@
 # Niche Finder AI
 
-Modern Next.js application that turns vague hobbies, passions, or skills into validated micro‑niche business ideas. Powered by Google’s Gemini models, each result arrives with a description, potential score, USP, target audience, and starter action—presented inside responsive cards tailor-made for instant sharing.
+Modern Next.js application that turns vague hobbies, passions, or skills into validated micro‑niche business ideas. Powered by OpenAI’s GPT models, each result arrives with a description, potential score, USP, target audience, and starter action—presented inside responsive cards tailor-made for instant sharing.
 
 ## ✨ Features
 
-- **Gemini 1.5 integration** – configurable model selection with graceful fallbacks and smarter error messaging.
+- **OpenAI integration** – configurable model selection with graceful fallbacks and smarter error messaging.
 - **Insight-rich cards** – every niche is rendered as a sleek three-column grid with accordions for USP, audience, and starter move.
 - **Guided UX** – hero radar banner, paginated results, and a polished footer with quick actions.
 - **Modern typography** – global Sora font pairing for a corporate, high-trust feel.
@@ -14,7 +14,7 @@ Modern Next.js application that turns vague hobbies, passions, or skills into va
 
 - Next.js 16 (App Router) & React 19
 - Tailwind CSS v4 (next-gen design tokens)
-- Google Generative AI SDK (`@google/generative-ai`)
+- OpenAI SDK (`openai`)
 - lucide-react icons & custom utility helpers
 
 ## 🚀 Getting Started
@@ -23,7 +23,7 @@ Modern Next.js application that turns vague hobbies, passions, or skills into va
 
 - Node.js 18+
 - npm (ships with Node)
-- A Google Generative AI API key with access to Gemini 1.5 models
+- An OpenAI API key with access to Responses/Chat models
 
 ### Installation
 
@@ -35,9 +35,9 @@ cp .env.example .env.local # if you keep an example file, otherwise create manua
 Create `.env.local` with:
 
 ```bash
-GEMINI_API_KEY=your-key-here
-# optional override (defaults to gemini-2.5-flash)
-GEMINI_MODEL=gemini-2.5-flash
+OPENAI_API_KEY=your-key-here
+# optional override (defaults to gpt-4o-mini)
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 ### Commands
@@ -76,18 +76,18 @@ Returns:
 }
 ```
 
-Errors include human-friendly hints (e.g., when an unsupported Gemini model is configured).
+Errors include human-friendly hints (e.g., when an unsupported OpenAI model is configured or quota runs out).
 
 ## 🧱 Project Structure
 
 - `src/app/page.tsx` – marketing hero, search flow, footer
-- `src/app/api/generate/route.ts` – Gemini integration
+- `src/app/api/generate/route.ts` – OpenAI integration
 - `src/components/NicheInput.tsx` – prompt form
 - `src/components/NicheList.tsx` – paginated card grid with accordions
 
 ## 📦 Deployment
 
-Deploy anywhere Next.js runs (Vercel, Netlify, Render, etc.). Ensure production env vars include `GEMINI_API_KEY` (and optional `GEMINI_MODEL`). The app has no server-side session storage, so it’s stateless by default.
+Deploy anywhere Next.js runs (Vercel, Netlify, Render, etc.). Ensure production env vars include `OPENAI_API_KEY` (and optional `OPENAI_MODEL`). The app has no server-side session storage, so it’s stateless by default.
 
 ## 🤝 Contributing
 

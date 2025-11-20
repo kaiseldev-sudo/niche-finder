@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
 const sora = Sora({
@@ -12,7 +13,7 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: "Niche Finder AI",
   description:
-    "Generate validation-ready niche ideas with USP, target audience, and starter moves powered by Gemini.",
+    "Generate validation-ready niche ideas with USP, target audience, and starter moves powered by OpenAI.",
   authors: [{ name: "json.dev" }],
   other: {
     author: "json.dev",
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${sora.variable} antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );

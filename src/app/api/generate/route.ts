@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
-const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 
 export async function POST(req: Request) {
     console.log("API Route hit");
@@ -15,20 +15,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
         }
 
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.OPENAI_API_KEY;
         console.log("API Key present:", !!apiKey);
 
         if (!apiKey) {
             return NextResponse.json(
-                { error: "GEMINI_API_KEY is not defined in environment variables" },
+                { error: "OPENAI_API_KEY is not defined in environment variables" },
                 { status: 500 }
             );
         }
 
         try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const modelId = resolveModel(process.env.GEMINI_MODEL);
-            const model = genAI.getGenerativeModel({ model: modelId });
+            const client = new OpenAI({ apiKey });
+            const modelId = resolveModel(process.env.OPENAI_MODEL);
 
             const systemPrompt = `
             You are a Niche Market Research Expert specializing in identifying profitable micro-niches.
@@ -49,21 +48,35 @@ export async function POST(req: Request) {
             Do not repeat or overlap niche ideas.
             Ensure niches are clearly distinct and targeted at different needs, demographics, or outcomes.
             Return only the JSON array, with no commentary.
-          
-            User Input: ${prompt}
         `;
 
-            const result = await model.generateContent(systemPrompt);
-            const response = result.response;
-            const text = response.text();
+            const completion = await client.chat.completions.create({
+                model: modelId,
+                temperature: 1,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    {
+                        role: "user",
+                        content: `
+                        Here is the user input: "${prompt}".
+                        Generate the 50-item JSON array now.
+                        `,
+                    },
+                ],
+            });
 
-            const cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+            const text = completion.choices?.[0]?.message?.content;
+            if (!text) {
+                throw new Error("No content returned by OpenAI");
+            }
+
+            const cleaned = cleanupJson(text);
             const jsonPayload = extractJsonArray(cleaned);
             const niches = JSON.parse(jsonPayload);
             return NextResponse.json({ niches });
 
         } catch (error) {
-            const normalizedError = normalizeGeminiError(error);
+            const normalizedError = normalizeOpenAIError(error);
             console.error("AI Generation failed:", normalizedError);
             return NextResponse.json(
                 {
@@ -95,40 +108,54 @@ function extractJsonArray(raw: string) {
     }
 }
 
+function cleanupJson(raw: string) {
+    return raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+}
+
 function resolveModel(configuredModel?: string | null) {
     const trimmed = configuredModel?.trim();
     if (!trimmed) {
-        return DEFAULT_GEMINI_MODEL;
-    }
-
-    const deprecatedModels = new Set([
-        "gemini-pro",
-        "models/gemini-pro",
-        "gemini-pro-vision",
-    ]);
-
-    if (deprecatedModels.has(trimmed)) {
-        console.warn(
-            `GEMINI_MODEL=${trimmed} is deprecated. Falling back to ${DEFAULT_GEMINI_MODEL}.`
-        );
-        return DEFAULT_GEMINI_MODEL;
+        return DEFAULT_OPENAI_MODEL;
     }
 
     return trimmed;
 }
 
-function normalizeGeminiError(error: unknown) {
-    const message = String(
-        (error as { message?: string })?.message ?? error ?? "Unknown error"
-    );
+function normalizeOpenAIError(error: unknown) {
+    const fallback = {
+        message: "Unknown error",
+        hint: undefined as string | undefined,
+        status: 500,
+    };
 
-    if (message.includes("models/gemini-pro")) {
-        return {
-            message,
-            hint: "Model gemini-pro is deprecated. Remove GEMINI_MODEL or set it to a Gemini 1.5 model.",
-            status: 400,
-        };
+    if (!error || typeof error !== "object") {
+        return { ...fallback, message: String(error ?? "Unknown error") };
     }
 
-    return { message, hint: undefined, status: 500 };
+    const err = error as {
+        status?: number;
+        code?: string;
+        message?: string;
+        error?: { message?: string; type?: string; code?: string };
+    };
+
+    const message = err.error?.message ?? err.message ?? fallback.message;
+    const code = err.error?.code ?? err.code;
+    const hint = deriveOpenAIHint(code);
+    const status = err.status ?? (code === "insufficient_quota" ? 402 : 500);
+
+    return { message, hint, status };
+}
+
+function deriveOpenAIHint(code?: string) {
+    switch (code) {
+        case "invalid_api_key":
+            return "Verify that OPENAI_API_KEY is correct and not expired.";
+        case "insufficient_quota":
+            return "Your OpenAI account is out of credits. Check billing limits.";
+        case "model_not_found":
+            return "The configured model is unavailable. Update OPENAI_MODEL.";
+        default:
+            return undefined;
+    }
 }

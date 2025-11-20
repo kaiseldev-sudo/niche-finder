@@ -127,7 +127,7 @@ export default function Home() {
           </div>
           <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-gray-500 gap-2">
             <span>
-              © {currentYear} Niche Finder AI. Built with Next.js + Gemini, crafted by{" "}
+              © {currentYear} Niche Finder AI. Built with Next.js + OpenAI, crafted by{" "}
               <a
                 href="https://jaysonreales.vercel.app/"
                 target="_blank"
