@@ -11,7 +11,8 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: "Niche Finder AI",
-  description: "Discover profitable micro-niches with AI insights.",
+  description:
+    "Generate validation-ready niche ideas with USP, target audience, and starter moves powered by Gemini.",
   authors: [{ name: "json.dev" }],
   other: {
     author: "json.dev",
