@@ -36,8 +36,8 @@ Create `.env.local` with:
 
 ```bash
 GEMINI_API_KEY=your-key-here
-# optional override (defaults to gemini-1.5-flash)
-GEMINI_MODEL=gemini-1.5-flash
+# optional override (defaults to gemini-2.5-flash)
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### Commands
